@@ -317,7 +317,7 @@ app.get('/api/v1/bookings', async (req: Request, res: Response) => {
       if (result.rows.length === 0) {
          res.status(404).json({
             success: true,
-            message: "Vehicle not found",
+            message: "Booking not found",
             data: result.rows
          })
       } else {
@@ -335,7 +335,7 @@ app.get('/api/v1/bookings', async (req: Request, res: Response) => {
                name: getUser.rows[0].name,
                email: getUser.rows[0].email
             },
-             vehicle: {
+            vehicle: {
                vehicle_name: getVehicle.rows[0].vehicle_name,
                daily_rent_price: getVehicle.rows[0].daily_rent_price
             }
@@ -343,9 +343,9 @@ app.get('/api/v1/bookings', async (req: Request, res: Response) => {
          res.status(200).json({
             success: true,
             message: 'Vehicles retrieved successfully',
-            data: result.rows.map(booking=>{
+            data: result.rows.map(booking => {
                return {
-                  ...booking,...admin_view
+                  ...booking, ...admin_view
                }
             })
 
@@ -355,6 +355,80 @@ app.get('/api/v1/bookings', async (req: Request, res: Response) => {
 
    } catch (err: any) {
       return res.status(500).json({ message: 'Internal server error' })
+   }
+
+})
+app.get('/api/v1/bookings/:bookingId', async (req: Request, res: Response) => {
+
+   try {
+      const result = await pool.query(`SELECT * FROM bookings  WHERE id=$1`, [req.params.bookingId])
+      if (result.rows.length === 0) {
+         res.status(404).json({
+            success: true,
+            message: "Booking not found",
+            data: result.rows
+         })
+      } else {
+         const getVehicle = await pool.query(`SELECT * FROM vehicles WHERE id=$1 `, [result.rows[0].vehicle_id])
+         const vehicle_object = {
+            vehicle: {
+               vehicle_name: getVehicle.rows[0].vehicle_name,
+               daily_rent_price: getVehicle.rows[0].daily_rent_price,
+               type: getVehicle.rows[0].type
+            }
+         }
+
+         res.status(200).json({
+            success: true,
+            message: 'Vehicles retrieved successfully',
+            data: {
+               ...result.rows[0], ...vehicle_object
+            }
+
+
+         })
+      }
+
+
+   } catch (err: any) {
+      return res.status(500).json({ message: 'Internal server error' })
+   }
+
+})
+app.put('/api/v1/bookings/:bookingId', async (req: Request, res: Response) => {
+   // console.log(req.body)
+   const { status } = req.body
+   try {
+      const result = await pool.query(`UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *`, [status, req.params.bookingId])
+      // console.log(result)
+      if (result.rowCount === 0) {
+         res.status(404).json({
+            success: true,
+            message: "Vehicle not found",
+            data: result.rows
+         })
+      } else {
+         if (result.rows[0].status === 'cancelled' || result.rows[0].status === 'returned') {
+            const vehicle_status = 'available'
+            const vehicle_id = result.rows[0].vehicle_id
+            await pool.query(`UPDATE vehicles SET availability_status=$1 WHERE id=$2`, [vehicle_status, vehicle_id])
+            // await pool.query(`DELETE FROM bookings WHERE id=$1`, [req.params.bookingId])
+            res.status(200).json({
+               success: true,
+               message: 'Booking updated successfully',
+               data: result.rows[0].status === 'cancelled'? result.rows[0]:{...result.rows[0],...{vehicle:{availability_status:vehicle_status}}}
+
+            })
+         }
+
+
+
+
+      }
+
+
+   } catch (err: any) {
+      return res.status(500).json({ message: 'Internal server error', details: err.message })
    }
 
 })
