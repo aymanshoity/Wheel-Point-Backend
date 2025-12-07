@@ -22,7 +22,14 @@ Node.js | TypeScript |Express.js| JWT Token| PostgreSQL | bcryptjs
 
 
 ##Setup & Usage Instructions.
+1.run npm install to get all packages
 
-1.Signup for 2 users as role customer and admin..
+2. define the 3 parameter in the env 
+CONNECTION_STRING= for postgres sql connnection string
+PORT=port number 
+JWT_SECRET=KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
 
-2.login and get the token..based on that token user access is restricted..
+
+3.Signup for 2 users as role customer and admin..
+
+4.login and get the token..based on that token user access is restricted..
