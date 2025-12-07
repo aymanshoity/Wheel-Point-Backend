@@ -26,7 +26,9 @@ Node.js | TypeScript |Express.js| JWT Token| PostgreSQL | bcryptjs
 
 2. define the 3 parameter in the env 
 CONNECTION_STRING= for postgres sql connnection string
-PORT=port number 
+
+PORT=port number
+ 
 JWT_SECRET=KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
 
 
