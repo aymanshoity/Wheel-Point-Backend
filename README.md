@@ -15,8 +15,14 @@
 
 5. password and vehicle availibilty has been restricted so far. 
 
+6.Code structures have been followed modular patter
+
 
 Node.js | TypeScript |Express.js| JWT Token| PostgreSQL | bcryptjs 
 
 
 ##Setup & Usage Instructions.
+
+1.Signup for 2 users as role customer and admin..
+
+2.login and get the token..based on that token user access is restricted..
