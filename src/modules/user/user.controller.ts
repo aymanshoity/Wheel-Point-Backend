@@ -6,10 +6,14 @@ const getUser=async (req: Request, res: Response) => {
 
    try {
       const result = await userServices.getUser()
+      
       res.status(200).json({
          success: true,
          message: 'Users retrieved successfully',
-         data: result.rows
+         data: result.rows.map(user=>{
+            const {password,...userObj}=user;
+            return userObj;
+         })
 
       })
 
@@ -28,10 +32,11 @@ const getSingleUser=async (req: Request, res: Response) => {
             message: "user not found"
          })
       } else {
+         const {password,...userObj}=result.rows[0]
          res.status(200).json({
             success: true,
             message: 'Users retrieved successfully',
-            data: result.rows[0]
+            data: userObj
 
          })
       }
@@ -52,11 +57,11 @@ const updateUser=async (req: Request, res: Response) => {
             message: "user not found"
          })
       } else {
-
+         const {password,...userObj}=result.rows[0]
          res.status(200).json({
             success: true,
             message: 'User updated successfully',
-            data: result.rows[0]
+            data: userObj
 
          })
       }
@@ -82,7 +87,7 @@ const deleteUser=async (req: Request, res: Response) => {
          res.status(200).json({
             success: true,
             message: 'User deleted successfully',
-            data: result.rows
+            // data: result.rows
 
          })
       }

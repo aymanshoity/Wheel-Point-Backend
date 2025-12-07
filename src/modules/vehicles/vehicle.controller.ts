@@ -6,7 +6,7 @@ const createVehicles=async (req: Request, res: Response) => {
  
    try {
       const result = await vehiclesServices.createVehicles(req.body)
-      console.log(result.rows[0])
+      // console.log(result.rows[0])
       res.status(201).json({
          success: true,
          message: 'Vehicle created successfully',
@@ -22,7 +22,7 @@ const createVehicles=async (req: Request, res: Response) => {
 const getVehicles= async (req: Request, res: Response) => {
 
    try {
-      const result = await vehiclesServices.getSingleVehicle(req.params.vehicleId as string)
+      const result = await vehiclesServices.getVehicles()
       if (result.rows.length === 0) {
          res.status(404).json({
             success: true,
@@ -44,18 +44,39 @@ const getVehicles= async (req: Request, res: Response) => {
    }
 
 }
-const getSingleVehicle=async(id:string)=>{
-    const result = await pool.query(`SELECT * FROM vehicles WHERE id=$1`, [id as string])
-   return result
-}
-const updateVehicle= async (req: Request, res: Response) => {
-   
-   try {
-      const result = await vehiclesServices.updateVehicle(req.body,req.params.vehicleId as string)
-      // console.log(result)
-      if (result.rowCount === 0) {
+const getSingleVehicle=async(req: Request, res: Response)=>{
+    
+    try {
+      const result = await vehiclesServices.getSingleVehicle(req.params.vehicleId as string)
+
+      if (result.rows.length === 0) {
          res.status(404).json({
             success: true,
+            message: "Vehicle not found",
+            data: result.rows
+         })
+      } else {
+         res.status(200).json({
+            success: true,
+            message: 'Vehicle retrieved successfully',
+            data: result.rows[0]
+
+         })
+      }
+
+
+   } catch (err: any) {
+      return res.status(500).json({ message: 'Internal server error' })
+   }
+}
+const updateVehicle=async (req:Request,res:Response)=>{
+   console.log(req.body,req.params.vehicleId)
+   try {
+      const result = await vehiclesServices.updateVehicle(req.body,req.params.vehicleId as string)
+       console.log(result)
+      if (result.rowCount === 0) {
+         res.status(404).json({
+            success: false,
             message: "Vehicle not found",
             data: result.rows
          })
@@ -71,10 +92,14 @@ const updateVehicle= async (req: Request, res: Response) => {
 
 
    } catch (err: any) {
-      return res.status(500).json({ message: 'Internal server error', details: err.message })
+      return res.status(500).json({ success:false,message: 'Internal server error', details: err.message })
    }
 
 }
+
+
+
+
 const deleteVehicle= async (req: Request, res: Response) => {
 
    try {

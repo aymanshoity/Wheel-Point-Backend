@@ -3,11 +3,11 @@ import { pool } from "../../config/db"
 import { vehiclesServices } from "../vehicles/vehicle.service"
 import { bookingServices } from "./booking.service"
 
-const createBookings=async (req: Request, res: Response) => {
+const createBookings = async (req: Request, res: Response) => {
    const { customer_id, vehicle_id, rent_start_date, rent_end_date } = req.body
 
    const getVehicle = await vehiclesServices.getSingleVehicle(vehicle_id as string)
-   
+
    try {
       if (getVehicle.rows[0].availability_status !== 'available') {
          return res.status(400).json({
@@ -29,7 +29,7 @@ const createBookings=async (req: Request, res: Response) => {
          }
 
          // insert data into bookings table
-         const result = await bookingServices.createBookings({customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status})
+         const result = await bookingServices.createBookings({ customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status })
          console.log(result.rows[0])
          if (result.rows[0]) {
             // update vehicle availability status
@@ -53,7 +53,7 @@ const createBookings=async (req: Request, res: Response) => {
    }
 
 }
-const getBookings=  async (req: Request, res: Response) => {
+const getBookings = async (req: Request, res: Response) => {
 
    try {
       const result = await bookingServices.getBookings()
@@ -101,7 +101,7 @@ const getBookings=  async (req: Request, res: Response) => {
    }
 
 }
-const getSingleBooking=async (req: Request, res: Response) => {
+const getSingleBooking = async (req: Request, res: Response) => {
 
    try {
       const result = await bookingServices.getSingleBooking((req.params.bookingId as string))
@@ -138,7 +138,7 @@ const getSingleBooking=async (req: Request, res: Response) => {
    }
 
 }
-const updateBooking= async (req: Request, res: Response) => {
+const updateBooking = async (req: Request, res: Response) => {
    // console.log(req.body)
    const { status } = req.body
    try {
@@ -154,14 +154,25 @@ const updateBooking= async (req: Request, res: Response) => {
          if (result.rows[0].status === 'cancelled' || result.rows[0].status === 'returned') {
             const vehicle_status = 'available'
             const vehicle_id = result.rows[0].vehicle_id
+            const userRole = req.user?.role
             await vehiclesServices.updateVehicle({ availability_status: vehicle_status }, vehicle_id as string)
             // await pool.query(`DELETE FROM bookings WHERE id=$1`, [req.params.bookingId])
-            res.status(200).json({
-               success: true,
-               message: 'Booking updated successfully',
-               data: result.rows[0].status === 'cancelled'? result.rows[0]:{...result.rows[0],...{vehicle:{availability_status:vehicle_status}}}
+            if (userRole === "admin") {
+               res.status(200).json({
+                  success: true,
+                  message: 'Booking marked as returned. Vehicle is now available',
+                  data:  { ...result.rows[0], ...{ vehicle: { availability_status: vehicle_status } } }
 
-            })
+               })
+            }else{
+                res.status(200).json({
+                  success: true,
+                  message: 'Booking cancelled successfully',
+                  data:  { ...result.rows[0], ...{ vehicle: { availability_status: vehicle_status } } }
+
+               })
+            }
+
          }
 
 
@@ -178,6 +189,6 @@ const updateBooking= async (req: Request, res: Response) => {
 
 
 
-export const bookingControllers={
-   createBookings,getBookings,getSingleBooking,updateBooking
+export const bookingControllers = {
+   createBookings, getBookings, getSingleBooking, updateBooking
 }

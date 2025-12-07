@@ -6,7 +6,7 @@ const router=Router()
 
 router.get('/',auth("admin"), userControllers.getUser)
 router.get('/:userId',auth("admin","customer"), userControllers.getSingleUser)
-router.put('/:userId', userControllers.updateUser)
-router.delete('/:userId', userControllers.deleteUser)
+router.put('/:userId',auth("admin","customer"), userControllers.updateUser)
+router.delete('/:userId',auth('admin'), userControllers.deleteUser)
 
 export const userRoute=router

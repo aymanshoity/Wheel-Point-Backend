@@ -15,16 +15,18 @@ const userSignin = async ( email:string, password:string) => {
       return null
    }
    const  user=result.rows[0];
+   
    const isPasswordMatched=await bcrypt.compare(password,user.password)
    if(!isPasswordMatched){
       
       return false;
    }
    const secret=config.jwt_secrete as string;
-   console.log(secret)
+   // console.log(secret)
    const  token = jwt.sign({ name: user.name, email: user.email, role: user.role },secret,{expiresIn:'14d'})
-   console.log(`Generated Token: ${token}`);
-   return {token,user}
+   // console.log(`Generated Token: ${token}`);
+   const {password:any,...userObject}=user
+   return {token,userObject}
 }  
 
 export const authServices = {
